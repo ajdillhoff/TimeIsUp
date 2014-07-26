@@ -3,6 +3,7 @@
 #include "TimeIsUpPrivatePCH.h"
 #include "TimeIsUpCharacter.h"
 #include "PaperFlipbookComponent.h"
+#include "TimeIsUpPlayerController.h"
 
 ATimeIsUpCharacter::ATimeIsUpCharacter(const class FPostConstructInitializeProperties& PCIP)
 	: Super(PCIP)
@@ -37,10 +38,10 @@ ATimeIsUpCharacter::ATimeIsUpCharacter(const class FPostConstructInitializePrope
 
 	// Configure character movement
 	CharacterMovement->GravityScale = 2.0f;
-	CharacterMovement->AirControl = 0.80f;
+	CharacterMovement->AirControl = 0.0f;
 	CharacterMovement->JumpZVelocity = 1000.f;
-	CharacterMovement->GroundFriction = 3.0f;
-	CharacterMovement->MaxWalkSpeed = 600.0f;
+	CharacterMovement->GroundFriction = 10.0f;
+	CharacterMovement->MaxWalkSpeed = 1000.0f;
 	CharacterMovement->MaxFlySpeed = 600.0f;
 
 	// Lock character motion onto the XZ plane, so the character can't move in or out of the screen
@@ -105,4 +106,29 @@ void ATimeIsUpCharacter::TouchStarted(const ETouchIndex::Type FingerIndex, const
 {
 	// jump on any touch
 	Jump();
+}
+
+void ATimeIsUpCharacter::OnCollision(class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+  if ((OtherActor != NULL) && (OtherActor != this) && (OtherComp != NULL))
+  {
+    // We don't actually have any other actors, so we don't have to check for anything
+    ATimeIsUpPlayerController *playerController = Cast<ATimeIsUpPlayerController>(this->Controller);
+    
+    if (playerController) {
+      // Looks like we've got it m80
+      playerController->coinCount++;
+      UE_LOG(LogClass, Display, TEXT("Look like we've made it!"))
+    }
+  }
+}
+void ATimeIsUpCharacter::ReceiveHit(UPrimitiveComponent* MyComp, AActor* Other, UPrimitiveComponent* OtherComp, bool bSelfMoved, FVector HitLocation, FVector HitNormal, FVector NormalForce, const FHitResult& Hit)
+{
+	Super::ReceiveHit(MyComp, Other, OtherComp, bSelfMoved, HitLocation, HitNormal, NormalForce, Hit);
+  
+  UE_LOG(LogClass, Display, TEXT("Look like we've made it!"))
+  ATimeIsUpCharacter *otherCharacter = Cast<ATimeIsUpCharacter>(Other);
+  if (otherCharacter) {
+    otherCharacter->Destroy();
+  }
 }
