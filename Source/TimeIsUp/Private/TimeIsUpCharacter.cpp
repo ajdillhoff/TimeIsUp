@@ -4,9 +4,10 @@
 #include "TimeIsUpCharacter.h"
 #include "PaperFlipbookComponent.h"
 #include "TimeIsUpPlayerController.h"
+#include "TimeIsUpCoin.h"
 
 ATimeIsUpCharacter::ATimeIsUpCharacter(const class FPostConstructInitializeProperties& PCIP)
-	: Super(PCIP)
+: Super(PCIP)
 {
 	// Don't rotate when the controller rotates.
 	bUseControllerRotationPitch = false;
@@ -14,21 +15,21 @@ ATimeIsUpCharacter::ATimeIsUpCharacter(const class FPostConstructInitializePrope
 	bUseControllerRotationRoll = false;
 
 	// Set the size of our collision capsule.
-	CapsuleComponent->SetCapsuleHalfHeight(96.0f);
-	CapsuleComponent->SetCapsuleRadius(40.0f);
+	CapsuleComponent->SetCapsuleHalfHeight(16.0f);
+	CapsuleComponent->SetCapsuleRadius(16.0f);
 
 	// Create a camera boom attached to the root (capsule)
 	CameraBoom = PCIP.CreateDefaultSubobject<USpringArmComponent>(this, TEXT("CameraBoom"));
 	CameraBoom->AttachTo(RootComponent);
-	CameraBoom->TargetArmLength = 500.0f;
-	CameraBoom->SocketOffset = FVector(0.0f, 0.0f, 75.0f);
+	CameraBoom->TargetArmLength = 200.0f;
+	CameraBoom->SocketOffset = FVector(0.0f, 0.0f, 45.0f);
 	CameraBoom->bAbsoluteRotation = true;
 	CameraBoom->RelativeRotation = FRotator(0.0f, -90.0f, 0.0f);
 
 	// Create an orthographic camera (no perspective) and attach it to the boom
 	SideViewCameraComponent = PCIP.CreateDefaultSubobject<UCameraComponent>(this, TEXT("SideViewCamera"));
 	SideViewCameraComponent->ProjectionMode = ECameraProjectionMode::Orthographic;
-	SideViewCameraComponent->OrthoWidth = 2048.0f;
+	SideViewCameraComponent->OrthoWidth = 1024.0f;
 	SideViewCameraComponent->AttachTo(CameraBoom, USpringArmComponent::SocketName);
 
 	// Prevent all automatic rotation behavior on the camera, character, and camera component
@@ -38,11 +39,11 @@ ATimeIsUpCharacter::ATimeIsUpCharacter(const class FPostConstructInitializePrope
 
 	// Configure character movement
 	CharacterMovement->GravityScale = 2.0f;
-	CharacterMovement->AirControl = 0.0f;
-	CharacterMovement->JumpZVelocity = 1000.f;
+	CharacterMovement->AirControl = 1.0f;
+	CharacterMovement->JumpZVelocity = 900.f;
 	CharacterMovement->GroundFriction = 10.0f;
-	CharacterMovement->MaxWalkSpeed = 1000.0f;
-	CharacterMovement->MaxFlySpeed = 600.0f;
+	CharacterMovement->MaxWalkSpeed = 800.0f;
+	CharacterMovement->MaxFlySpeed = 500.0f;
 
 	// Lock character motion onto the XZ plane, so the character can't move in or out of the screen
 	CharacterMovement->bConstrainToPlane = true;
@@ -108,27 +109,41 @@ void ATimeIsUpCharacter::TouchStarted(const ETouchIndex::Type FingerIndex, const
 	Jump();
 }
 
-void ATimeIsUpCharacter::OnCollision(class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
-{
-  if ((OtherActor != NULL) && (OtherActor != this) && (OtherComp != NULL))
-  {
-    // We don't actually have any other actors, so we don't have to check for anything
-    ATimeIsUpPlayerController *playerController = Cast<ATimeIsUpPlayerController>(this->Controller);
-    
-    if (playerController) {
-      // Looks like we've got it m80
-      playerController->coinCount++;
-      UE_LOG(LogClass, Display, TEXT("Look like we've made it!"))
-    }
-  }
+/********************
+*     COLLISION     *
+********************/
+
+void ATimeIsUpCharacter::ReceiveActorBeginOverlap(AActor *OtherActor) {
+	Super::ReceiveActorBeginOverlap(OtherActor);
+
+	ATimeIsUpCoin *coin = Cast<ATimeIsUpCoin>(OtherActor);
+	if (coin) {
+		// We don't actually have any other actors, so we don't have to check for anything
+		ATimeIsUpPlayerController *playerController = Cast<ATimeIsUpPlayerController>(this->Controller);
+
+		if (playerController) {
+			// Looks like we've got it m80
+			playerController->coinCount++;
+			UE_LOG(LogClass, Display, TEXT("Coin Get! %d"), playerController->coinCount)
+		}
+		coin->Destroy();
+	}
 }
+
 void ATimeIsUpCharacter::ReceiveHit(UPrimitiveComponent* MyComp, AActor* Other, UPrimitiveComponent* OtherComp, bool bSelfMoved, FVector HitLocation, FVector HitNormal, FVector NormalForce, const FHitResult& Hit)
 {
 	Super::ReceiveHit(MyComp, Other, OtherComp, bSelfMoved, HitLocation, HitNormal, NormalForce, Hit);
-  
-  UE_LOG(LogClass, Display, TEXT("Look like we've made it!"))
-  ATimeIsUpCharacter *otherCharacter = Cast<ATimeIsUpCharacter>(Other);
-  if (otherCharacter) {
-    otherCharacter->Destroy();
-  }
+
+	ATimeIsUpCoin *coin = Cast<ATimeIsUpCoin>(Other);
+	if (coin) {
+		// We don't actually have any other actors, so we don't have to check for anything
+		ATimeIsUpPlayerController *playerController = Cast<ATimeIsUpPlayerController>(this->Controller);
+
+		if (playerController) {
+			// Looks like we've got it m80
+			playerController->coinCount++;
+			UE_LOG(LogClass, Display, TEXT("Coin Get! %d"), playerController->coinCount)
+		}
+		coin->Destroy();
+	}
 }

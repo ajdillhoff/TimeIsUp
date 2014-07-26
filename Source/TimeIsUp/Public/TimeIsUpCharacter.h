@@ -24,9 +24,6 @@ class ATimeIsUpCharacter : public APaperCharacter
 	/** Camera boom positioning the camera beside the character */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
 	TSubobjectPtr<class USpringArmComponent> CameraBoom;
-  
-  UFUNCTION()
-  void OnCollision(class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
 protected:
 	// The animation to play while running around
@@ -40,6 +37,7 @@ protected:
 public:
   
   virtual void ReceiveHit(class UPrimitiveComponent* MyComp, class AActor* Other, class UPrimitiveComponent* OtherComp, bool bSelfMoved, FVector HitLocation, FVector HitNormal, FVector NormalForce, const FHitResult& Hit) override;
+	virtual void ReceiveActorBeginOverlap(class AActor *OtherActor) override;
 
 protected:
 

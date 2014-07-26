@@ -7,7 +7,7 @@
 ATimeIsUpPlayerController::ATimeIsUpPlayerController(const class FPostConstructInitializeProperties& PCIP)
 	: Super(PCIP)
 {
-
+	coinCount = 0;
 }
 
 
