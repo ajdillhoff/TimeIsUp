@@ -25,6 +25,10 @@ class ATimeIsUpCharacter : public APaperCharacter
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
 	TSubobjectPtr<class USpringArmComponent> CameraBoom;
 
+	/* How long the player has been alive */
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Player)
+	double TimeAlive;
+
 protected:
 	// The animation to play while running around
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Animations)
@@ -33,13 +37,6 @@ protected:
 	// The animation to play while idle (standing still)
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animations)
 	class UPaperFlipbook* IdleAnimation;
-  
-public:
-  
-  virtual void ReceiveHit(class UPrimitiveComponent* MyComp, class AActor* Other, class UPrimitiveComponent* OtherComp, bool bSelfMoved, FVector HitLocation, FVector HitNormal, FVector NormalForce, const FHitResult& Hit) override;
-	virtual void ReceiveActorBeginOverlap(class AActor *OtherActor) override;
-
-protected:
 
 	/** Called to choose the correct animation to play based on the character's movement state */
 	void UpdateAnimation();
@@ -53,4 +50,6 @@ protected:
 	// APawn interface
 	virtual void SetupPlayerInputComponent(class UInputComponent* InputComponent) override;
 	// End of APawn interface
+
+	virtual void Tick(float) override;
 };

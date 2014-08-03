@@ -5,6 +5,7 @@
 #include "PaperFlipbookComponent.h"
 #include "TimeIsUpPlayerController.h"
 #include "TimeIsUpCoin.h"
+#include "TimeIsUpGameMode.h"
 
 ATimeIsUpCharacter::ATimeIsUpCharacter(const class FPostConstructInitializeProperties& PCIP)
 : Super(PCIP)
@@ -56,6 +57,9 @@ ATimeIsUpCharacter::ATimeIsUpCharacter(const class FPostConstructInitializePrope
 
 	// Note: The reference to the RunningAnimation and IdleAnimation flipbooks to play on the Sprite component
 	// are set in the derived blueprint asset named MyCharacter (to avoid direct content references in C++)
+
+	// Custom Init
+	TimeAlive = 0.0;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -109,41 +113,12 @@ void ATimeIsUpCharacter::TouchStarted(const ETouchIndex::Type FingerIndex, const
 	Jump();
 }
 
-/********************
-*     COLLISION     *
-********************/
+void ATimeIsUpCharacter::Tick(float DeltaTime) {
+	Super::Tick(DeltaTime);
 
-void ATimeIsUpCharacter::ReceiveActorBeginOverlap(AActor *OtherActor) {
-	Super::ReceiveActorBeginOverlap(OtherActor);
+	TimeAlive += DeltaTime;
 
-	ATimeIsUpCoin *coin = Cast<ATimeIsUpCoin>(OtherActor);
-	if (coin) {
-		// We don't actually have any other actors, so we don't have to check for anything
-		ATimeIsUpPlayerController *playerController = Cast<ATimeIsUpPlayerController>(this->Controller);
-
-		if (playerController) {
-			// Looks like we've got it m80
-			playerController->coinCount++;
-			UE_LOG(LogClass, Display, TEXT("Coin Get! %d"), playerController->coinCount)
-		}
-		coin->Destroy();
-	}
-}
-
-void ATimeIsUpCharacter::ReceiveHit(UPrimitiveComponent* MyComp, AActor* Other, UPrimitiveComponent* OtherComp, bool bSelfMoved, FVector HitLocation, FVector HitNormal, FVector NormalForce, const FHitResult& Hit)
-{
-	Super::ReceiveHit(MyComp, Other, OtherComp, bSelfMoved, HitLocation, HitNormal, NormalForce, Hit);
-
-	ATimeIsUpCoin *coin = Cast<ATimeIsUpCoin>(Other);
-	if (coin) {
-		// We don't actually have any other actors, so we don't have to check for anything
-		ATimeIsUpPlayerController *playerController = Cast<ATimeIsUpPlayerController>(this->Controller);
-
-		if (playerController) {
-			// Looks like we've got it m80
-			playerController->coinCount++;
-			UE_LOG(LogClass, Display, TEXT("Coin Get! %d"), playerController->coinCount)
-		}
-		coin->Destroy();
-	}
+	//if (TimeAlive > 10.0) {
+	//	Destroy();
+	//}
 }

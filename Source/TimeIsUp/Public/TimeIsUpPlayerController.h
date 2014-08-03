@@ -15,5 +15,8 @@ class TIMEISUP_API ATimeIsUpPlayerController : public APlayerController
 
   UPROPERTY(BlueprintReadWrite, CATEGORY=ControllerProperties)
 	uint32 coinCount;
+
+	/* Informs that player got a ring */
+	void OnRingGet();
 	
 };

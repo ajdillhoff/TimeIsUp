@@ -3,12 +3,16 @@
 #include "TimeIsUpPrivatePCH.h"
 #include "TimeIsUpGameMode.h"
 #include "TimeIsUpPlayerController.h"
+#include "TimeIsUpGameState.h"
+#include "TimeIsUpPlayerState.h"
 
 ATimeIsUpGameMode::ATimeIsUpGameMode(const class FPostConstructInitializeProperties& PCIP)
 	: Super(PCIP)
 {
   // Default Controller Class
   PlayerControllerClass = ATimeIsUpPlayerController::StaticClass();
+	GameStateClass = ATimeIsUpGameState::StaticClass();
+	PlayerStateClass = ATimeIsUpPlayerState::StaticClass();
   
 	// set default pawn class to our Blueprinted character
 	static ConstructorHelpers::FObjectFinder<UClass> PlayerPawnBPClass(TEXT("Class'/Game/Blueprints/MyCharacter.MyCharacter_C'"));
@@ -16,4 +20,45 @@ ATimeIsUpGameMode::ATimeIsUpGameMode(const class FPostConstructInitializePropert
 	{
 		DefaultPawnClass = PlayerPawnBPClass.Object;
 	}
+
+	NumPlayers = 0;
+}
+
+void ATimeIsUpGameMode::InitNewPlayer(AController* NewPlayer, const TSharedPtr<FUniqueNetId>& UniqueId, const FString& Options) {
+	Super::InitNewPlayer(NewPlayer, UniqueId, Options);
+
+	// assign a player number
+	ATimeIsUpPlayerState* NewPlayerState = CastChecked<ATimeIsUpPlayerState>(NewPlayer->PlayerState);
+	const int32 PlayerNum = NumPlayers;
+	NewPlayerState->SetPlayerNum(NumPlayers);
+
+	NumPlayers++;
+}
+
+void ATimeIsUpGameMode::InitGameState() {
+	Super::InitGameState();
+
+	ATimeIsUpGameState* const MyGameState = Cast<ATimeIsUpGameState>(GameState);
+	if (MyGameState) {
+		MyGameState->NumPlayers = NumPlayers;
+	}
+}
+
+void ATimeIsUpGameMode::CoinGet(AController* Player) {
+	ATimeIsUpPlayerState* PlayerState = Player ? Cast<ATimeIsUpPlayerState>(Player->PlayerState) : NULL;
+
+	GEngine->AddOnScreenDebugMessage(-1, 1.5, FColor::White, "COIN GET");
+
+	if (Player) {
+		PlayerState->ScoreRing();
+		PlayerState->InformAboutRing(PlayerState);
+	}
+}
+
+void ATimeIsUpGameMode::DefaultTimer() {
+	Super::DefaultTimer();
+}
+
+void ATimeIsUpGameMode::HandleMatchHasStarted() {
+	Super::HandleMatchHasStarted();
 }
