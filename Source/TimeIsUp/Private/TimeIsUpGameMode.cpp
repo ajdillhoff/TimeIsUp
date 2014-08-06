@@ -5,6 +5,7 @@
 #include "TimeIsUpPlayerController.h"
 #include "TimeIsUpGameState.h"
 #include "TimeIsUpPlayerState.h"
+#include "TimeIsUpHUD.h"
 
 ATimeIsUpGameMode::ATimeIsUpGameMode(const class FPostConstructInitializeProperties& PCIP)
 	: Super(PCIP)
@@ -13,6 +14,7 @@ ATimeIsUpGameMode::ATimeIsUpGameMode(const class FPostConstructInitializePropert
   PlayerControllerClass = ATimeIsUpPlayerController::StaticClass();
 	GameStateClass = ATimeIsUpGameState::StaticClass();
 	PlayerStateClass = ATimeIsUpPlayerState::StaticClass();
+	HUDClass = ATimeIsUpHUD::StaticClass();
   
 	// set default pawn class to our Blueprinted character
 	static ConstructorHelpers::FObjectFinder<UClass> PlayerPawnBPClass(TEXT("Class'/Game/Blueprints/MyCharacter.MyCharacter_C'"));
@@ -31,6 +33,14 @@ void ATimeIsUpGameMode::InitNewPlayer(AController* NewPlayer, const TSharedPtr<F
 	ATimeIsUpPlayerState* NewPlayerState = CastChecked<ATimeIsUpPlayerState>(NewPlayer->PlayerState);
 	const int32 PlayerNum = NumPlayers;
 	NewPlayerState->SetPlayerNum(NumPlayers);
+
+	ATimeIsUpGameState* const MyGameState = CastChecked<ATimeIsUpGameState>(GameState);
+	if (MyGameState) {
+		if (PlayerNum >= MyGameState->PlayerScores.Num()) {
+			MyGameState->NumPlayers++;
+			MyGameState->PlayerScores.AddZeroed(PlayerNum - MyGameState->PlayerScores.Num() + 1);
+		}
+	}
 
 	NumPlayers++;
 }

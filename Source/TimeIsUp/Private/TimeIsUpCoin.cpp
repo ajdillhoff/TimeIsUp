@@ -34,7 +34,7 @@ void ATimeIsUpCoin::ReceiveActorBeginOverlap(class AActor* OtherActor) {
 }
 
 bool ATimeIsUpCoin::CanBePickedUp(class ATimeIsUpCharacter* TestPawn) const {
-	return TestPawn != NULL;
+	return TestPawn != NULL && PickedUpBy == NULL;
 }
 
 void ATimeIsUpCoin::GiveCoinTo(class ATimeIsUpCharacter *Pawn) {
@@ -54,6 +54,11 @@ void ATimeIsUpCoin::PickupOnTouch(class ATimeIsUpCharacter *Pawn) {
 		if (CanBePickedUp(Pawn)) {
 			GiveCoinTo(Pawn);
 			PickedUpBy = Pawn;
+
+			// TODO: Not sure if there is a proper way to do this
+			SetActorHiddenInGame(true);
+			SetActorEnableCollision(false);
+
 		}
 	}
 }
